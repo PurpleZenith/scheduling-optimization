@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -15,53 +16,55 @@ func main() {
 
 func check(av []int) {
 
-	number_of_timeslots_testing := 20
+	number_of_timeslots_testing := 17
 
 	periods := int(math.Pow(2, float64(number_of_timeslots_testing))) - 1
 
-	// valid_columns := []int{}
+	valid_columns := []int{}
 
 	for i := 0; i <= periods; i++ {
+
 		// fmt.Println(i)
 		base2string := strconv.FormatInt(int64(i), 2)
 		// fmt.Println(base2string)
 
-		// for the first half of the day, there is max 3 meeetings allowed
+		if strings.Count(base2string, "1") < 6 {
+			if !strings.Contains(base2string, "1111") {
+				column := []int{}
+				for _, char := range base2string {
+					num := int(char - '0')
+					column = append(column, num)
+				}
+				// fmt.Println(column)
+				// // we want to fill the remainder of it with any zeroes at the beginning:
 
-		column := []int{}
-		for _, char := range base2string {
-			num := int(char - '0')
-			column = append(column, num)
+				beginningOfColumn := make([]int, number_of_timeslots_testing-len(column))
+				for i := range beginningOfColumn {
+					beginningOfColumn[i] = 0
+				}
+				column = append(beginningOfColumn, column...)
+
+				// now, we have a column.
+
+				// we now apply filters to a singular day, based on how careful we are, we can greatly decrease the runtime
+				fitsAvailability := true
+				for index, _ := range column {
+					if av[index] < column[index] {
+						fitsAvailability = false
+						break
+					}
+				}
+
+				if fitsAvailability {
+					valid_columns = append(valid_columns, i)
+				}
+			}
+
 		}
-		// fmt.Println(column)
-		// // we want to fill the remainder of it with any zeroes at the beginning:
 
-		lengthDifference := number_of_timeslots_testing - len(column)
-
-		j := 1
-		for j <= lengthDifference {
-			column = prependInt(column, 0)
-			j = j + 1
-		}
-		// fmt.Println(column)
-
-		// now, we have a column.
-
-		// // we now apply filters to a singular day, based on how careful we are, we can greatly decrease the runtime
-		// fitsAvailability := true
-		// for index, _ := range column {
-		// 	if av[index] < column[index] {
-		// 		fitsAvailability = false
-		// 		break
-		// 	}
-		// }
-
-		// if fitsAvailability {
-		// 	valid_columns = append(valid_columns, i)
-		// }
-
-		// fmt.Println(i)
 	}
+
+	fmt.Println(valid_columns)
 
 	fmt.Println("end")
 }
