@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"runtime/pprof"
 )
@@ -14,22 +15,20 @@ func main() {
 		fmt.Println(err)
 	}
 	// av4 := []int{1, 0, 1, 0, 1, 0}
-	// av := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0}
 	// av20 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0} //20
 	// av22 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1} //22
 	// av24 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0} //24
 	// av26 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1} //26
-	// av28 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1}                   //28
+	// av28 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1} //28
 	// av30 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1} //30
-	// av32 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1}       //32
-	av34 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1} //34
+	// av32 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1} //32
+	// av34 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1} //34
 
 	pprof.StartCPUProfile(f)
 	defer pprof.StopCPUProfile()
 
-	check(av34, len(av34))
-	// all_monday_availabilities := import_availabilities_monday()
-	// check(all_monday_availabilities[0])
+	all_monday_availabilities := import_availabilities_monday()
+	check(all_monday_availabilities[0], len(all_monday_availabilities[0]))
 
 }
 
@@ -37,30 +36,32 @@ func check(av []int, size int) {
 	fmt.Printf("Starting Availability: %v", av)
 	fmt.Println()
 
-	periods := 16777215
-	// periods := int(math.Pow(2, float64(size))) - 1
-	valid_columns := []int{}
+	// periods := 17179869183
+	periods := int(math.Pow(2, float64(size))) - 1
+	// valid_columns := []int{}
+	emptySlice := make([]int, size)
 	for i := 0; i <= periods; i++ {
-		possibility := generate_slice(i, size)
+		possibility := generate_slice(i, size, emptySlice)
 		isValidColumn := check_availability(av, possibility, size)
 
 		if isValidColumn {
-			valid_columns = append(valid_columns, i)
+			// valid_columns = append(valid_columns, i)
+			fmt.Println(i)
 		}
 
 	}
 
-	// print out array at the end
-	fmt.Printf("Valid Columns: %v", valid_columns)
-	fmt.Printf("Length: %v", len(valid_columns))
+	// // print out array at the end
+	// fmt.Printf("Valid Columns: %v", valid_columns)
+	// fmt.Printf("Length: %v", len(valid_columns))
 }
 
-func generate_slice(value int, size int) []int {
+func generate_slice(value int, size int, emptySlice []int) []int {
 
 	powers := []uint64{1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184}
 	// this returns columns, eg column with [1 0 1 0] corresponds to h = 10
 
-	slice := make([]int, size)
+	slice := emptySlice
 	valueAsUint := uint64(value)
 	initialValue := valueAsUint
 
@@ -70,15 +71,15 @@ func generate_slice(value int, size int) []int {
 		if initialValue >= holder {
 			// then we need to remove something off it
 			initialValue = initialValue - holder
-			slice[countdown] = 1
+			slice[size-countdown-1] = 1
 		} else {
 			// dont remove anything
-			slice[countdown] = 0
+			slice[size-countdown-1] = 0
 		}
 
 	}
 
-	slice = reverseSlice(slice)
+	// slice = reverseSlice(slice)
 	// fmt.Println("i is:", value, "with result", slice)
 	return slice
 }
@@ -109,8 +110,16 @@ func check_availability(av []int, column []int, size int) bool {
 }
 
 func import_availabilities_monday() [][]int {
+	// c1 := []int{0, 1, 1, 1, 0}
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0} //20
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1}                                     //22
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0} //24
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1}                         //26
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1} //28
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1} //30
+	// c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1} //32
+	c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1} //34
 
-	c1 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1}
 	c2 := []int{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1}
 	c3 := []int{1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 	c4 := []int{1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
