@@ -2,88 +2,85 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math"
+	"net/http"
 	_ "net/http/pprof"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 func main() {
-	// av := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0}
-	// av20 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0} //20
-	// av22 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1} //22
-	av24 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0} //24
-	// av26 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1} //26
-	// av28 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1}                   //28
-	// av30 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1} //30
-	// av32 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1}       //32
-	// av34 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1} //34
-	check(av24, len(av24))
-	// all_monday_availabilities := import_availabilities_monday()
-	// check(all_monday_availabilities[0])
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+	all_monday_availabilities := import_availabilities_monday()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go check(all_monday_availabilities[0], wg)
+	wg.Wait()
 
 }
 
-func check(av []int, size int) {
-	periods := int(math.Pow(2, float64(size))) - 1
+func check(av []int, wg sync.WaitGroup) {
+
+	defer wg.Done()
+
+	number_of_timeslots_testing := 24
+
+	periods := int(math.Pow(2, float64(number_of_timeslots_testing))) - 1
+
 	valid_columns := []int{}
+
 	for i := 0; i <= periods; i++ {
-		possibility := generate_slice(i, size)
-		isValidColumn := check_availability(av, possibility, size)
 
-		if isValidColumn {
-			valid_columns = append(valid_columns, i)
-		}
+		// fmt.Println(i)
+		base2string := strconv.FormatInt(int64(i), 2)
+		// fmt.Println(base2string)
 
-	}
+		// go tool pprof  http://localhost:6060/debug/pprof/heap
 
-	// print out array at the end
-	fmt.Printf("Valid Columns: %v", valid_columns)
-	fmt.Printf("Length: %v", len(valid_columns))
-}
+		if strings.Count(base2string, "1") < 6 {
+			if !strings.Contains(base2string, "1111") {
+				column := []int{}
+				for _, char := range base2string {
+					num := int(char - '0')
+					column = append(column, num)
+				}
+				// fmt.Println(column)
+				// // we want to fill the remainder of it with any zeroes at the beginning:
 
-func generate_slice(value int, size int) []int {
+				beginningOfColumn := make([]int, number_of_timeslots_testing-len(column))
+				for i := range beginningOfColumn {
+					beginningOfColumn[i] = 0
+				}
+				column = append(beginningOfColumn, column...)
 
-	// this returns columns, eg column with [1 0 1 0] corresponds to h = 10
+				// now, we have a column.
 
-	slice := make([]int, size)
-	valueAsFloat := math.Round(float64(value))
-	initialValue := valueAsFloat
+				// we now apply filters to a singular day, based on how careful we are, we can greatly decrease the runtime
+				fitsAvailability := true
+				for index, _ := range column {
+					if av[index] < column[index] {
+						fitsAvailability = false
+						break
+					}
+				}
 
-	for countdown := size - 1; countdown >= 0; countdown-- {
-		holder := math.Pow(float64(2), float64(countdown))
-
-		if initialValue >= holder {
-			// then we need to remove something off it
-			initialValue = initialValue - holder
-			slice[countdown] = 1
-		} else {
-			// dont remove anything
-			slice[countdown] = 0
-		}
-
-	}
-
-	// reverse slice: https://stackoverflow.com/questions/19239449/how-do-i-reverse-an-array-in-go
-	for i, j := 0, len(slice)-1; i < j; i, j = i+1, j-1 {
-		slice[i], slice[j] = slice[j], slice[i]
-	}
-	// fmt.Println("i is:", value, "with result", slice)
-	return slice
-}
-
-func check_availability(av []int, column []int, size int) bool {
-	indexToCheck := size - 1 // THIS CORRESPONDS TO THE SIZE OF THE POSSIBILITY ARRAY MINUS ONE!!!!
-	for {
-		if av[indexToCheck] < column[indexToCheck] {
-			return false
-		} else {
-			indexToCheck = indexToCheck - 1
-
-			if indexToCheck == -1 {
-				return true // that means it cycled through the entire array so it's done
+				if fitsAvailability {
+					valid_columns = append(valid_columns, i)
+				}
 			}
+
 		}
 
 	}
+
+	fmt.Println(valid_columns)
+
+	fmt.Println("end")
 
 }
 
@@ -370,6 +367,14 @@ func import_availabilities_monday() [][]int {
 // 	slice := [][]int{c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30}
 // 	return slice
 // }
+
+// / from https://stackoverflow.com/questions/53737435/how-to-prepend-int-to-slice
+func prependInt(x []int, y int) []int {
+	x = append(x, 0)
+	copy(x[1:], x)
+	x[0] = y
+	return x
+}
 
 // TEMPLATE:
 
