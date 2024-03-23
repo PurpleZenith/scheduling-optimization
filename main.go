@@ -3,10 +3,18 @@ package main
 import (
 	"fmt"
 	"math"
-	_ "net/http/pprof"
+	"os"
+	"runtime/pprof"
 )
 
 func main() {
+
+	f, err := os.Create("myprogram.prof")
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
 	// av := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0}
 	// av20 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0} //20
 	// av22 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1} //22
@@ -16,6 +24,10 @@ func main() {
 	// av30 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1} //30
 	// av32 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1}       //32
 	// av34 := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1} //34
+
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
 	check(av24, len(av24))
 	// all_monday_availabilities := import_availabilities_monday()
 	// check(all_monday_availabilities[0])
