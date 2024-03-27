@@ -38,10 +38,46 @@ func main() {
 	// make2dayWeeks_part3(max_number_meets_full_week, len(av))
 
 	// link_4ab_with_3_3(max_number_meets_full_week, len(av))
+	best_availabiltbiies := readLines(1, 3)
+
+	best_bound := greedy(best_availabiltbiies)
+	fmt.Println(best_bound)
 
 }
 
+func greedy(av [][]string) int {
+	massString := ""
+	fmt.Println(massString)
+	// need to check that iter3_1 to iter3_50
+	// massString_c1 = stringFeasibilitySingleDay(av, 0, 1, 2, 3, 4)
+	// massString_c2 = stringFeasibilitySingleDay(av, 5, 6, 7, 8, 9)
+	// massString := av[0] + av[1] + av[2] + av[3] + av[4]
 
+	possibleLargeString := []string{}
+
+	for i := 0; i < len(av); i++ {
+		possibleLargeString = append(possibleLargeString, stringFeasibilitySingleDay(av, i))
+
+	}
+	return 0
+}
+
+func stringFeasibilitySingleDay(av [][]string, j1 int) string {
+	massString := ""
+	for i1 := 0; i1 < len(av[j1]); i1++ {
+		// for i2 := 0; i2 < len(av[j2])-1; i2++ {
+		// 	for i3 := 0; i3 < len(av[j3])-1; i3++ {
+		// 		for i4 := 0; i4 < len(av[j4])-1; i4++ {
+		// 			for i5 := 0; i5 < len(av[j5])-1; i5++ {
+		fmt.Println(i1)
+		massString = av[j1][i1] //+ av[j2][i2] + av[j3][i3] + av[j4][i4] + av[j5][i5]
+		// 			}
+		// 		}
+		// 	}
+		// }
+	}
+	return massString
+}
 
 func create_columns(av [][]int) {
 
@@ -123,64 +159,51 @@ func generate_slice(value int, size int) []int {
 	return slice
 }
 
-func find_bfs(startInterval int, endInterval int)[]int{
-	
+func readLines(startPosition int, endPosition int) [][]string {
+
 	stringInterval := [][]string{}
 
-	// we want to read from 
-    for i := 1; i <= 200; i++ {
-        fileName := "reverse_iter3_"+strconv.Itoa(i)
-
-
-    }
-
-
-	
-	for x := 
-	for i := 1; i <= num_of_availabilities_processing; i++ {
-		fmt.Println("adding halfday constraint:", i, "of", num_of_availabilities_processing)
-		validLines := []string{}
-
-		looking_for_file := "iter1_" + strconv.Itoa(i)
-		file, err := os.Open(looking_for_file)
-
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-
-		for scanner.Scan() {
-			line := scanner.Text()
-
-	for i := 1; i <= num_of_availabilities_processing; i++ {
-		validLines := []string{}
-
-		looking_for_file := "iter1_" + strconv.Itoa(i)
-		file, err := os.Open(looking_for_file)
-
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-
-		for scanner.Scan() {
-			line := scanner.Text()
-
-
-}
+	// https://stackoverflow.com/questions/35704948/generate-array-with-with-range-of-integers
+	lo, hi := startPosition, endPosition
+	s := make([]int, hi-lo+1)
+	for i := range s {
+		s[i] = i + lo
 	}
+
+	// we want to read from
+	for i := 1; i <= 5; i++ {
+		// reading := []string{}
+		fileName := "reverse_iter3_" + strconv.Itoa(i)
+		file, err := os.Open(fileName)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil
+		}
+		scanner := bufio.NewScanner(file)
+
+		holder := []string{}
+		// Keep track of the current line number
+		lineNumber := 1
+		fmt.Println(fileName)
+		// Iterate through each line in the file
+		for scanner.Scan() {
+			// Check if the current line number is in the list of lines to read
+			for _, line := range s {
+				if lineNumber == line {
+					// Print the line if it's in the list of lines to read
+					holder = append(holder, scanner.Text())
+					break // Move to the next line
+				}
+			}
+
+			// Increment the line number
+			lineNumber++
+		}
+		stringInterval = append(stringInterval, holder)
+
+	}
+	return stringInterval
 }
-
-
-
-
-
 
 func remove_halfday_columns(max_number_meets_half_day int, num_of_availabilities_processing int) {
 
