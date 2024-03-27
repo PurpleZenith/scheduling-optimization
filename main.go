@@ -62,19 +62,20 @@ func greedy(av [][]string) int {
 	return 0
 }
 
-func stringFeasibilitySingleDay(av [][]string, j1 int) string {
+func stringFeasibilitySingleDay(av [][]string, i int) string {
 	massString := ""
-	for i1 := 0; i1 < len(av[j1]); i1++ {
-		// for i2 := 0; i2 < len(av[j2])-1; i2++ {
-		// 	for i3 := 0; i3 < len(av[j3])-1; i3++ {
-		// 		for i4 := 0; i4 < len(av[j4])-1; i4++ {
-		// 			for i5 := 0; i5 < len(av[j5])-1; i5++ {
-		fmt.Println(i1)
-		massString = av[j1][i1] //+ av[j2][i2] + av[j3][i3] + av[j4][i4] + av[j5][i5]
-		// 			}
-		// 		}
-		// 	}
-		// }
+	for i1 := 0; i1 < len(av[i])-1; i1++ {
+		for i2 := 0; i2 < len(av[i+1])-1; i2++ {
+			for i3 := 0; i3 < len(av[i+2])-1; i3++ {
+				for i4 := 0; i4 < len(av[i+3])-1; i4++ {
+					for i5 := 0; i5 < len(av[i+4])-1; i5++ {
+						fmt.Println("")
+						massString = av[1][i] + av[j2][i2] + av[j3][i3] + av[j4][i4] + av[j5][i5]
+
+					}
+				}
+			}
+		}
 	}
 	return massString
 }
